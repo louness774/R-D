@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Upload, AlertTriangle, CheckCircle, FileText, ChevronRight } from 'lucide-react';
+import { Upload, AlertTriangle, CheckCircle, FileText, ChevronRight, Settings, FileSearch } from 'lucide-react';
 import PDFViewer from './components/PDFViewer';
+import RGDUParameters from './components/RGDUParameters';
 import ErrorBoundary from './components/ErrorBoundary';
 import './main.css';
 
@@ -12,6 +13,7 @@ function AppContent() {
   const [loading, setLoading] = useState(false);
   const [selectedAnomaly, setSelectedAnomaly] = useState(null);
   const [error, setError] = useState(null);
+  const [view, setView] = useState('inspector'); // 'inspector' | 'parameters'
 
   const handleFileUpload = async (e) => {
     const uploadedFile = e.target.files[0];
@@ -73,79 +75,118 @@ function AppContent() {
           <h3>Payslip Inspector</h3>
         </div>
 
-        <div className="upload-zone">
-          <input
-            type="file"
-            accept=".pdf"
-            onChange={handleFileUpload}
-            id="file-upload"
-            style={{ display: 'none' }}
-          />
-          <label htmlFor="file-upload">
-            <Upload size={32} style={{ marginBottom: 12 }} />
-            <p>Glisser un PDF ou cliquer pour importer</p>
-          </label>
+        <div style={{ display: 'flex', gap: 10, padding: '0 10px 10px 10px', borderBottom: '1px solid #e2e8f0' }}>
+          <button
+            onClick={() => setView('inspector')}
+            style={{
+              flex: 1, padding: 8, borderRadius: 6, border: 'none',
+              background: view === 'inspector' ? '#e2e8f0' : 'transparent',
+              cursor: 'pointer', display: 'flex', justifyContent: 'center'
+            }}
+            title="Inspecteur"
+          >
+            <FileSearch size={20} color={view === 'inspector' ? '#0f172a' : '#64748b'} />
+          </button>
+          <button
+            onClick={() => setView('parameters')}
+            style={{
+              flex: 1, padding: 8, borderRadius: 6, border: 'none',
+              background: view === 'parameters' ? '#e2e8f0' : 'transparent',
+              cursor: 'pointer', display: 'flex', justifyContent: 'center'
+            }}
+            title="Paramètres RGDU"
+          >
+            <Settings size={20} color={view === 'parameters' ? '#0f172a' : '#64748b'} />
+          </button>
         </div>
 
-        {loading && <div style={{ padding: 20, textAlign: 'center' }}>Analyse en cours...</div>}
-
-        {error && (
-          <div style={{ padding: 15, margin: 10, background: '#fee2e2', color: '#b91c1c', borderRadius: 6, fontSize: '0.9em' }}>
-            <strong>Erreur :</strong> {error}
-          </div>
-        )}
-
-        {analysis && (
-          <div className="results-panel">
-            <div className={`status-badge ${analysis.status === 'OK' ? 'status-ok' : 'status-error'}`}>
-              {analysis.status === 'OK' ? <CheckCircle size={16} /> : <AlertTriangle size={16} />}
-              {analysis.status === 'OK' ? "Aucune anomalie détectée" : `${analysis.anomalies.length} anomalie(s) détectée(s)`}
+        {view === 'inspector' ? (
+          <>
+            <div className="upload-zone">
+              <input
+                type="file"
+                accept=".pdf"
+                onChange={handleFileUpload}
+                id="file-upload"
+                style={{ display: 'none' }}
+              />
+              <label htmlFor="file-upload">
+                <Upload size={32} style={{ marginBottom: 12 }} />
+                <p>Glisser un PDF ou cliquer pour importer</p>
+              </label>
             </div>
 
-            <div className="anomalies-list">
-              {analysis.anomalies.map((anomaly, idx) => (
-                <div
-                  key={idx}
-                  className={`anomaly-card ${selectedAnomaly === anomaly ? 'selected' : ''}`}
-                  onClick={() => setSelectedAnomaly(anomaly)}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                    <span style={{ fontWeight: 600, color: '#ef4444' }}>{anomaly.title}</span>
-                    <span style={{ fontSize: '0.8em', background: '#fee2e2', padding: '2px 6px', borderRadius: 4 }}>
-                      {anomaly.code}
-                    </span>
-                  </div>
-                  <p style={{ fontSize: '0.9em', color: '#4b5563' }}>{anomaly.explanation}</p>
-                </div>
-              ))}
-            </div>
+            {loading && <div style={{ padding: 20, textAlign: 'center' }}>Analyse en cours...</div>}
 
-            {/* Extracted Data Preview (Optional) */}
-            <div style={{ marginTop: 24 }}>
-              <h4>Données extraites</h4>
-              <div style={{ fontSize: '0.85em', color: '#64748b' }}>
-                <p>Net: {analysis?.extracted_data?.net_a_payer?.value} €</p>
-                <p>Brut: {analysis?.extracted_data?.salaire_brut?.value} €</p>
+            {error && (
+              <div style={{ padding: 15, margin: 10, background: '#fee2e2', color: '#b91c1c', borderRadius: 6, fontSize: '0.9em' }}>
+                <strong>Erreur :</strong> {error}
               </div>
-            </div>
+            )}
+
+            {analysis && (
+              <div className="results-panel">
+                <div className={`status-badge ${analysis.status === 'OK' ? 'status-ok' : 'status-error'}`}>
+                  {analysis.status === 'OK' ? <CheckCircle size={16} /> : <AlertTriangle size={16} />}
+                  {analysis.status === 'OK' ? "Aucune anomalie détectée" : `${analysis.anomalies.length} anomalie(s) détectée(s)`}
+                </div>
+
+                <div className="anomalies-list">
+                  {analysis.anomalies.map((anomaly, idx) => (
+                    <div
+                      key={idx}
+                      className={`anomaly-card ${selectedAnomaly === anomaly ? 'selected' : ''}`}
+                      onClick={() => setSelectedAnomaly(anomaly)}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                        <span style={{ fontWeight: 600, color: '#ef4444' }}>{anomaly.title}</span>
+                        <span style={{ fontSize: '0.8em', background: '#fee2e2', padding: '2px 6px', borderRadius: 4 }}>
+                          {anomaly.code}
+                        </span>
+                      </div>
+                      <p style={{ fontSize: '0.9em', color: '#4b5563' }}>{anomaly.explanation}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Extracted Data Preview (Optional) */}
+                <div style={{ marginTop: 24 }}>
+                  <h4>Données extraites</h4>
+                  <div style={{ fontSize: '0.85em', color: '#64748b' }}>
+                    <p>Net: {analysis?.extracted_data?.net_a_payer?.value} €</p>
+                    <p>Brut: {analysis?.extracted_data?.salaire_brut?.value} €</p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </>
+        ) : (
+          <div style={{ padding: 20 }}>
+            <p style={{ color: '#64748b' }}>Configurez les paramètres RGDU ici.</p>
           </div>
         )}
       </div>
 
-      {/* Main Content (PDF) */}
+      {/* Main Content (PDF or Params) */}
       <div className="content-area">
-        {file ? (
-          <PDFViewer
-            file={file}
-            boxes={getHighlights()}
-          />
+        {view === 'parameters' ? (
+          <RGDUParameters />
         ) : (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#94a3b8' }}>
-            <FileText size={64} style={{ opacity: 0.2 }} />
-          </div>
+          <>
+            {file ? (
+              <PDFViewer
+                file={file}
+                boxes={getHighlights()}
+              />
+            ) : (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#94a3b8' }}>
+                <FileText size={64} style={{ opacity: 0.2 }} />
+              </div>
+            )}
+          </>
         )}
       </div>
-    </div>
+    </div >
   );
 }
 

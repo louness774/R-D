@@ -118,6 +118,7 @@ def extract_payslip_data(lines: List[Dict[str, Any]]) -> PayslipData:
         "net_imposable": [r"netimposable", r"netfiscal", r"netapdeclarer"],
         "prelevement_source": [r"impotsurserevenu", r"prelevementalasource", r"pas"],
         "total_cotisations": [r"totalcotisations", r"totalretenues", r"totalcharges"],
+        "allegements": [r"allegements", r"exonerations", r"reductiongenerale", r"rgdu", r"allgt"],
         "periode": [r"periode"]
     }
 
@@ -178,4 +179,3 @@ def extract_payslip_data(lines: List[Dict[str, Any]]) -> PayslipData:
                          setattr(data, field, field_obj)
                          
     return data
-

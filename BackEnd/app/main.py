@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.models import PayslipAnalysis, PayslipData, Anomaly
 from app.core.extractor import extract_text_content, group_words_into_lines, extract_payslip_data
 from app.core.rules import check_rules
+from app.core.rgdu import RGDUParams, load_rgdu_params, save_rgdu_params
 
 import logging
 
@@ -24,6 +25,15 @@ app.add_middleware(
 @app.get("/")
 def read_root():
     return {"message": "Payslip Anomaly Detector API is running"}
+
+@app.get("/rgdu-params", response_model=RGDUParams)
+def get_rgdu_params():
+    return load_rgdu_params()
+
+@app.post("/rgdu-params", response_model=RGDUParams)
+def update_rgdu_params(params: RGDUParams):
+    save_rgdu_params(params)
+    return params
 
 @app.post("/analyze", response_model=PayslipAnalysis)
 async def analyze_payslip(file: UploadFile = File(...)):
@@ -59,7 +69,9 @@ async def analyze_payslip(file: UploadFile = File(...)):
     # 2. Analysis
     try:
         logger.info("Starting analysis...")
-        anomalies = check_rules(data)
+        # Load current parameters for analysis
+        rgdu_params = load_rgdu_params()
+        anomalies = check_rules(data, rgdu_params)
         logger.info(f"Analysis complete. Found {len(anomalies)} anomalies.")
     except Exception as e:
         logger.error(f"Analysis failed: {str(e)}", exc_info=True)

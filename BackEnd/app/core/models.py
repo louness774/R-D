@@ -36,6 +36,7 @@ class PayslipData(BaseModel):
     total_cotisations: Optional[ExtractedField] = None
     prelevement_source: Optional[ExtractedField] = None
     net_imposable: Optional[ExtractedField] = None
+    allegements: Optional[ExtractedField] = None # RGDU / Reductions
     periode: Optional[ExtractedField] = None # Text based
 
 class PayslipAnalysis(BaseModel):
