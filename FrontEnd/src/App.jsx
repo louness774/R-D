@@ -11,31 +11,45 @@ function AppContent() {
   const [analysis, setAnalysis] = useState(null);
   const [loading, setLoading] = useState(false);
   const [selectedAnomaly, setSelectedAnomaly] = useState(null);
+  const [error, setError] = useState(null);
 
   const handleFileUpload = async (e) => {
     const uploadedFile = e.target.files[0];
     if (!uploadedFile) return;
 
+    console.log("File selected:", uploadedFile);
     setFile(uploadedFile);
     setLoading(true);
     setAnalysis(null);
+    setSelectedAnomaly(null); // Reset selection
+    setError(null);
 
     const formData = new FormData();
     formData.append("file", uploadedFile);
 
     try {
+      console.log("Sending request to backend...");
       const res = await fetch(`${API_URL}/analyze`, {
         method: "POST",
         body: formData,
       });
+      console.log("Response received:", res.status);
+
       if (!res.ok) {
-        throw new Error(`Erreur serveur: ${res.status}`);
+        const errorText = await res.text();
+        throw new Error(`Erreur serveur (${res.status}): ${errorText}`);
       }
+
       const data = await res.json();
+      console.log("Data received:", data);
+
       setAnalysis(data);
+      if (data.anomalies && data.anomalies.length > 0) {
+        setSelectedAnomaly(data.anomalies[0]);
+      }
     } catch (err) {
-      console.error("Analysis failed", err);
-      alert(`Erreur lors de l'analyse: ${err.message}`);
+      console.error("Analysis failed:", err);
+      setError(err.message);
     } finally {
       setLoading(false);
     }
@@ -74,6 +88,12 @@ function AppContent() {
         </div>
 
         {loading && <div style={{ padding: 20, textAlign: 'center' }}>Analyse en cours...</div>}
+
+        {error && (
+          <div style={{ padding: 15, margin: 10, background: '#fee2e2', color: '#b91c1c', borderRadius: 6, fontSize: '0.9em' }}>
+            <strong>Erreur :</strong> {error}
+          </div>
+        )}
 
         {analysis && (
           <div className="results-panel">

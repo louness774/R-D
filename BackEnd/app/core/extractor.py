@@ -97,6 +97,12 @@ def _merge_line(words: List[Dict[str, Any]]) -> Dict[str, Any]:
     x1 = max(w['bbox'][2] for w in words)
     y1 = max(w['bbox'][3] for w in words)
     
+    return {
+        "page": page,
+        "text": text,
+        "bbox": [x0, y0, x1, y1]
+    }
+    
 
 from app.core.models import PayslipData, ExtractedField, TextReference
 from app.core.normalizer import parse_french_amount, normalize_key
