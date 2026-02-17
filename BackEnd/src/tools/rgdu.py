@@ -1,3 +1,4 @@
+from typing import Any
 """
 Calcul de la Réduction Générale Dégressive Unique (RGDU) 2026
 Selon le décret n°2025-887 du 4 septembre 2025
@@ -10,6 +11,7 @@ def calculer_rgdu(
     heures_supplementaires: float = 0,
     effectif_50_et_plus: bool = True,
     smic_mensuel: float = 1823.03,
+    tdeltaopt:Any = None,
 ) -> dict:
     """
     Calcule la réduction générale dégressive unique (RGDU) mensuelle.
@@ -20,8 +22,7 @@ def calculer_rgdu(
         heures_supplementaires: Nombre d'heures supplémentaires du mois
         effectif_50_et_plus: True si entreprise >= 50 salariés, False sinon
         smic_mensuel: SMIC mensuel brut 2026 (défaut 1823.03 €)
-
-    Returns:
+        tdeltaopt: Valeur optionnelle pour Tdelta (par défaut None, utilise la valeur standard)
         dict avec le détail de chaque étape du calcul
     """
 
@@ -33,6 +34,8 @@ def calculer_rgdu(
         Tdelta = 0.3821  # FNAL à 0.50%
     else:
         Tdelta = 0.3781  # FNAL à 0.10%
+    if tdeltaopt is not None:
+        Tdelta = tdeltaopt
 
     Tmax = Tmin + Tdelta  # 0.4021 ou 0.3981
 
@@ -159,6 +162,6 @@ def afficher_resultat(result: dict) -> None:
 if __name__ == "__main__":
 
     print("TEST 1")
-    r1 = calculer_rgdu(brut_mensuel=3729.98, effectif_50_et_plus=True, heures_supplementaires=0)
+    r1 = calculer_rgdu(brut_mensuel=3309.44, effectif_50_et_plus=True, heures_supplementaires=0,tdeltaopt=0.3241)
     afficher_resultat(r1)
 
